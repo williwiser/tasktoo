@@ -22,7 +22,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -31,16 +33,14 @@ public class App {
         return "Hello World!";
     }
 
-    public static String documentToString(Document document) {
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            TransformerFactory.newInstance().newTransformer().transform(new DOMSource(document),
-                    new StreamResult(outputStream));
-            return outputStream.toString("UTF-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+    public static Boolean isValid(Set<String> s) {
+        List<String> possibleFields = List.of("name", "postalZip", "region", "country", "address", "list");
+        for (int i = 0; i < s.size(); i++) {
+            if (!possibleFields.contains(s.toArray()[i])) {
+                return false;
+            }
         }
+        return true;
     }
 
     public static void main(String[] args) {
@@ -68,28 +68,36 @@ public class App {
             JSONArray jsonArray = new JSONArray();
 
             System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
-
-            // Get all employee nodes
-            NodeList nodeList = doc.getElementsByTagName("record");
-
-            // Prompt user for fields to print
-            System.out.println("Enter the fields to display (comma separated), e.g., name,region,country:");
-            String input = reader.readLine();
-            System.out.print("");
-
-            // Split the input into selected fields and store them in a set
             Set<String> selectedFields = new HashSet<>();
-            for (String field : input.split(",")) {
-                selectedFields.add(field.trim());
+            // Get all record nodes
+            NodeList nodeList = doc.getElementsByTagName("record");
+            while (true) {
+                // Prompt user for fields to print
+                System.out.println("Enter the fields to display (comma separated), e.g., name,region,country:");
+                String input = reader.readLine();
+                System.out.print("");
+
+                // Split the input into selected fields and store them in a set
+                for (String field : input.split(",")) {
+                    selectedFields.add(field.trim());
+                }
+
+                if (isValid(selectedFields)) {
+                    break;
+                }
+
+                // Loops if invalid input
+                System.out.println("Something's wrong with your input. Try again.");
+                System.out.println("");
+                selectedFields = new HashSet<>();
             }
 
-            // Loop through all employee nodes
+            // Loop through all record nodes
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
                 JSONObject jsonObject = new JSONObject();
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) node;
-
                     // Check and print selected fields
                     if (selectedFields.contains("name")) {
                         String name = element.getElementsByTagName("name").item(0).getTextContent();
