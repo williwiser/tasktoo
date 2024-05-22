@@ -10,8 +10,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
 
 public class App {
     public String getGreeting() {
@@ -19,13 +25,14 @@ public class App {
     }
 
     public static void main(String[] args) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
             // Use ClassLoader to load the XML file as a resource
             ClassLoader classLoader = App.class.getClassLoader();
             InputStream xmlFile = classLoader.getResourceAsStream("data.xml");
 
             if (xmlFile == null) {
-                throw new IllegalArgumentException("file not found! " + "sample.xml");
+                throw new IllegalArgumentException("file not found! " + "data.xml");
             }
 
             // Create a DocumentBuilderFactory
@@ -45,6 +52,17 @@ public class App {
             // Get all employee nodes
             NodeList nodeList = doc.getElementsByTagName("record");
 
+            // Prompt user for fields to print
+            System.out.println("Enter the fields to display (comma separated), e.g., name,region,country:");
+            String input = reader.readLine();
+            System.out.print("");
+
+            // Split the input into selected fields and store them in a set
+            Set<String> selectedFields = new HashSet<>();
+            for (String field : input.split(",")) {
+                selectedFields.add(field.trim());
+            }
+
             // Loop through all employee nodes
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
@@ -52,21 +70,31 @@ public class App {
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) node;
 
-                    // Get the value of the id, name, and position fields
-                    String name = element.getElementsByTagName("name").item(0).getTextContent();
-                    String postalZip = element.getElementsByTagName("postalZip").item(0).getTextContent();
-                    String region = element.getElementsByTagName("region").item(0).getTextContent();
-                    String country = element.getElementsByTagName("country").item(0).getTextContent();
-                    String address = element.getElementsByTagName("address").item(0).getTextContent();
-                    String list = element.getElementsByTagName("list").item(0).getTextContent();
-
-                    // Print the values
-                    System.out.println("Name: " + name);
-                    System.out.println("Postal Zip: " + postalZip);
-                    System.out.println("Region: " + region);
-                    System.out.println("Country: " + country);
-                    System.out.println("Address: " + address);
-                    System.out.println("List: " + list);
+                    // Check and print selected fields
+                    if (selectedFields.contains("name")) {
+                        String name = element.getElementsByTagName("name").item(0).getTextContent();
+                        System.out.println("Name: " + name);
+                    }
+                    if (selectedFields.contains("postalZip")) {
+                        String postalZip = element.getElementsByTagName("postalZip").item(0).getTextContent();
+                        System.out.println("Postal Zip: " + postalZip);
+                    }
+                    if (selectedFields.contains("region")) {
+                        String region = element.getElementsByTagName("region").item(0).getTextContent();
+                        System.out.println("Region: " + region);
+                    }
+                    if (selectedFields.contains("country")) {
+                        String country = element.getElementsByTagName("country").item(0).getTextContent();
+                        System.out.println("Country: " + country);
+                    }
+                    if (selectedFields.contains("address")) {
+                        String address = element.getElementsByTagName("address").item(0).getTextContent();
+                        System.out.println("Address: " + address);
+                    }
+                    if (selectedFields.contains("list")) {
+                        String list = element.getElementsByTagName("list").item(0).getTextContent();
+                        System.out.println("Position: " + list);
+                    }
                     System.out.println("--------------");
                 }
             }
