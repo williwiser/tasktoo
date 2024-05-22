@@ -4,14 +4,21 @@
 package tasktoo;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.swing.plaf.synth.Region;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.XML;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +29,18 @@ import java.util.Set;
 public class App {
     public String getGreeting() {
         return "Hello World!";
+    }
+
+    public static String documentToString(Document document) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            TransformerFactory.newInstance().newTransformer().transform(new DOMSource(document),
+                    new StreamResult(outputStream));
+            return outputStream.toString("UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static void main(String[] args) {
@@ -46,6 +65,7 @@ public class App {
 
             // Normalize the XML structure
             doc.getDocumentElement().normalize();
+            JSONArray jsonArray = new JSONArray();
 
             System.out.println("Root element: " + doc.getDocumentElement().getNodeName());
 
@@ -66,38 +86,40 @@ public class App {
             // Loop through all employee nodes
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
-
+                JSONObject jsonObject = new JSONObject();
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) node;
 
                     // Check and print selected fields
                     if (selectedFields.contains("name")) {
                         String name = element.getElementsByTagName("name").item(0).getTextContent();
-                        System.out.println("Name: " + name);
+                        jsonObject.put("name", name);
                     }
                     if (selectedFields.contains("postalZip")) {
                         String postalZip = element.getElementsByTagName("postalZip").item(0).getTextContent();
-                        System.out.println("Postal Zip: " + postalZip);
+                        jsonObject.put("postalZip", postalZip);
                     }
                     if (selectedFields.contains("region")) {
                         String region = element.getElementsByTagName("region").item(0).getTextContent();
-                        System.out.println("Region: " + region);
+                        jsonObject.put("region", region);
                     }
                     if (selectedFields.contains("country")) {
                         String country = element.getElementsByTagName("country").item(0).getTextContent();
-                        System.out.println("Country: " + country);
+                        jsonObject.put("country", country);
                     }
                     if (selectedFields.contains("address")) {
                         String address = element.getElementsByTagName("address").item(0).getTextContent();
-                        System.out.println("Address: " + address);
+                        jsonObject.put("address", address);
                     }
                     if (selectedFields.contains("list")) {
                         String list = element.getElementsByTagName("list").item(0).getTextContent();
-                        System.out.println("Position: " + list);
+                        jsonObject.put("list", list);
                     }
-                    System.out.println("--------------");
                 }
+                jsonArray.put(jsonObject);
             }
+
+            System.out.println(jsonArray);
         } catch (Exception e) {
             e.printStackTrace();
         }
